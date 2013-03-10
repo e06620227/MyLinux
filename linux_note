@@ -1,0 +1,380 @@
+1.Ken Thompson初创unix时，写的一个小文件系统有两个重要概念：（1）所有程序或者系统设备都是文件 （2）不管建构编辑器还是附属文件，缩写的程序有且只为有效完成目标
+
+2.GNU=GNU's Not Unix递归
+
+3.linix的作者linus本身是个性能癖，再加上89十年代硬件价格都还很高的情况下，所以系统也就设计用来充分发挥硬件效能
+
+4.linux作者为与unix兼容，unix应该是那时候的大明星吧，一是改软件，二是改系统。fan还是觉得改变自己，参照IEEE发布的kernal和应用程序之间的接口标准POSIX（Portable Operating System Interface）,结果就是在unix上能运行的软件不改动就能run on linux兼容与unix可称为Unix Like的一种
+
+5.linux在广大黑客志愿者加入协同开发阶段，linux作者还是相当务实“先求有且能跑，再求进一步改良”，大大鼓励了使用者与创造者，进步超快；再多人参与，随时都有程序代码加入，若每次加入一个程序，整个内核一组程序都重新编译的话太麻烦了，所以linux逐渐发展为具有模块功能（某些功能独立初kernal，在需要的时候菜加载到核心）。每台明白如何模块化？？？？？
+
+6.linux kernal版本标识：主版本.次版本.释出版本-修改版本。主、次版本为奇数development版，如2.5.XX，否则为stable版。
+
+7.linux distributions主要分为使用RPM方式安装软件（Red Hat,Fedora,SuSE）和使用Debian的dpkg方式（Debian，Ubuntu，B2D）
+
+8.学习linux，知道其为什么，就是出问题了知道往哪里找，怎么解决。那就要搞明白参数文件，哪个参数文件，哪个参数。最基础的文件架构、指令模式与脚本、软件管理方式和资源与帐号管理。linux定位可以更广，linux工作环境还有发展空间。这是个工具还有更多的方式来利用它，并不只是炫耀和架站。也为了挣脱使用windows的局限，换换思维方式，与最原始的设计理念目的上靠，像架服务器，你总得有个原理，在win或linux架只是平台不同，实现的东西还是一样的，别忘了最本质最初始的目的，而不要被表现出来的形式所困扰了（图形界面或者文字界面）。
+
+9.安装与命令->系统基础技能(权限、群组、程序)->i编辑器->shell以及shell script->软件管理（安装驱动，Tarball/RPM/DPKG等软件管理员方式安装）
+
+10.出现问题时.（1）google（2）查看本机或网络上的FAQ，本机上/usr/share/doc（现在不知的里面文件怎么组织的，不知的怎么看） 比较好的几个网http://www.tldp.org/
+http://www.linux.org.tw/CLDP/
+http://www.linux.org.tw/
+http://netlab.kh.edu.tw/index.htm
+http://www.cses.tcc.edu.tw/~chihwu/
+http://freebsd.lab.mlc.edu.tw/
+（3）本身错误提示回馈和查阅/var/log/下的log
+
+11.学习中的一些基本方针:（1）不要轻易重启重装来解决问题 (2)有系统设计文件目录，管理好自己的文件  （3）养成作记录习惯，特别是有问题时把过程记录清楚  （4）作为一个开发者，要机器迁就人  （5）写script，关键会偷，偷了会改，改了会变，变则通矣
+
+12.动力成就感和兴趣，linux上某一有趣课题深入，有心得分享有问题可以解决，建立成就感
+
+13.每个设备都当作一个文件来对待，几乎所有的硬件设备文件都在/dev这个目录下
+IDE硬盘	/dev/hd[a-d]
+SCSI/SATA/usb硬盘机	/dev/sd[a-p]
+U盘	/dev/sd[a-p]
+软盘	/dev/fd[0-1]
+打印机	25针：dev/lp[0-2]  usb：/dev/usb/lp[0-15]
+鼠标	usb：/dev/usb/mouse[0-15]  ps2:/dev/psaux
+当前cdROM/DVDROM	/dev/cdrom
+当前鼠标	/dev/mouse
+磁带机	IDE：/dev/ht0  SCSI：/dev/st0
+以上设备命名跟接口类型名与设备名称相关，不同接口支持的数量不一样。
+IDE硬盘根据所接线固定名字，如一个磁盘接在IDE2的Master（一个IDE排线可以接两个磁盘，另为slave）怎为/dev/hdc。SATA接口来说是通过核心侦测到的顺序来命名，而不管接在SATA1上还是SATA5上第一个为/dev/sda。
+
+14.磁盘	一个磁盘的第一个磁区（sector不是整个扇型，只是磁柱上那一小块）最重要有：（1）主启动记录区MBR（可以安装启动管理程序的地方）（2）分区表：记录磁盘的划分状态，分区记录的是初始磁道到结束磁道，是以磁道为最小单位分区的。分区表大小有限，采用1级扩展（类似与指针的指针），最后一个记录是Extended（这里间接在分的区为逻辑区），其他都是primary。本质上分区只是对分区表进行配置而已，好处（1）分区后相对要管理的磁道减少，数据集中，效率提高，（2）也算是对文件的分类管理，安全性提高，操作都只限于分区内。
+逻辑分区从5开始命名，前面就算没用也要保留
+一个主机只认一个第一个磁区，而不管接了几个磁盘
+
+15.计算机启动流程：BIOS根据配置启动硬盘，硬盘第一个分区MBR里的启动管理程序（boot loader），该load加载kernal文件到内存，然后运行内存中的kernal。  boot loader运行前都是死套路，从loader开始就变的有交互和变化，可以提供多重启动项目，可以启动其他loader（每个分区都有boot sector，可以放置boot loader），让其他loader工作。
+
+16.命令大小写敏感，一般格式command -options parameters
+
+17.几个基础命令：date，cal（日历），bc（计算器）,man(manual操作手册),info
+双tab，命令字段命令补齐，其他文件补齐
+ctrl+C命令中断
+ctrl+d代表EOF
+/usr/share/doc这个目录下有些说明文档
+
+18.man查看命令的使用说明时，会有“命令（n）”，n不同代表不同意义
+1-user在shell中可操作的命令或可执行文件
+2-系统核心可调用的函数与工具等
+3-一些常用的函数与函数库，大部分为c函数库
+4-设备文件的说明，通常在/dev下
+5-配置文件或某些文件的格式
+6-游戏
+7-惯例与协议等如里linux文件系统，网络协议，ASCII code的说明
+8-系统管理员可用的管理命令
+9-kernal有关的文件
+
+19.man查使用时，翻阅内容的一些按键
+空格（pgdn） 向下一页
+pgup 上页
+home 首页
+End 末页
+/string 向下搜string
+？string 上搜string
+n,N 对应上两搜索正向方向下一个string
+q 结束man page
+
+20.关机.观察系统状态，哪些用户在线用who，查看网络链接状态netstat -a，后台程序ps aux（所有系统运行程序）,ps -l（查阅自己bash程序状态）top
+内存数据写硬盘sync， 关机命令shutdown， 重新启动reboot
+
+21.系统运行模式，分7种等级。 3-纯文本，5-图形，0-关机，6-重新启动
+
+22./etc/passwd /etc/shadow /etc/group记录用户帐号，密码，群组信息
+
+23.linux文件属性
+权限10字符 如drwxrwx--- d目录，三组读写执行权限对应文件拥有者，同群组，其他
+
+24.改文件属性和权限
+改文件所属群组chgrp
+改文件拥有者chown
+上两命令可以用作复制文件后，因为cp回复制执行者的属性和权限
+改文件权限chmod,数字r4w2x1，符号u（user）g（group）o（others）a（all）+-=rwx
+
+25.文件rwx权限针对文件内容而言，w不含删除文件，文件执行跟x权限有无相关，而不是通win后缀关联；目录rwx，目录内容记录文件名列表，r读取目录内容显示改目录内容，w对改目录内容编辑，x能否成为工作目录。不管文件目录都是针对它本身内容
+
+26.linux是没有扩展名的，但可以在文件名中加入后缀方便辨识*.sh脚本，*.tar.gz压缩，*.html网页。以.起始名为隐藏
+
+27.linux文件的标准FHS，/：与开机系统有关，/usr（unix software resource）:与软件安装/执行有关，/var(variable):系统运作过程有关。
+/是系统启动，还原，修复相关，希望所在分区的数据稳定，除了系统相关必要的，其他大可不放在一个分区，根目录分区小为佳。
+/下面的次目录：/bin执行文件（常用命令），单人维护模式下还能操作；  /boot开机使用文件包括kernal，开机选单及所需配置;   /dev系统设备接口文件，存取该文件即存取设备；   /etc系统主要配置文件；   /home系统默认用户目录，每个账户都会在该目录产生自己的家目录；   /lib系统库函数，/bin下会调用的与开机会用的，/lib/modules下核心相关的模块（驱动程序）；   /media可移除设备，软盘，关盘，DVD都暂时mount与此;  /mnt暂时挂载额外的设备；  /opt第三方软件，以前习惯放/usr/local;  /root系统管理员目录，与系统紧密相关，与/同分区；  /sbin设定系统环境命令，只有root才能使用；  /srv服务所需数据，WWW，FTP；   /tmp临时文件，放置试验不重要数据;  /lost+found标准的ext2/ext3文件系统才有的目录，当文件系统发生错误时放置一些遗失的片段，通常在分区的最顶层   /proc虚拟文件系统，所有数据都在内存中包括kernal，process，外设状态，网络状态等，本身不占用硬盘   /sys与proc类似，主要记录与核心相关信息（已加载的核心模块，侦测到的设备信息）;   /selinux（Secure Enhance Linux执行目录）也与proc类似。 
+开机只有/被挂载，所以/etc，/bin，/dev，/lib，/sbin要与/在同一分区
+
+28./usr放置Unix软件资源，可分享不可变动数据，类适于c:\Windows和Program files
+
+29./var系统运行后才会渐渐占硬盘，/var/cache应用程序本身运行中产生的文件；  /var/lib程序执行中要用到的数据文件，如用到mysql的数据库/var/lib/mysql;  /var/lock某些设备或文件资源同时只能被一所用，需加锁；  /var/log登录文件，重要；   /var/mail个人email；  /ar/run某些程序或服务运行时，PID放置目录；  /var/spool队列数据
+
+30.一点或./表示当前目录，..或../上一层目录,-前个工作目录，～当前用户家目录，～account代表account家目录
+
+31.查看安装系统信息uname
+
+32.目录命令pwd（Print Working Directory），mkdir，rmdir
+
+33.$PATH环境路径变量，不同用户不同该值，屏蔽一些非该用户所用命令，不建议把当前路径.加入该变量不安全
+
+34.文件操作，复制cp，默认时目的档的拥有者是命令操作者；删除rm -r递归删除子目录； 移动rm；第一行开始显示文件cat；最后一行开始显示；显示时输出行号nl；一页页显示文件more；less与more类似，但多了往前翻页；只看头几行head；只看尾几行tail；以二进制方式读取文件od；创建空文件touch也可以改文件日期
+
+35.文件默认权限umask，目录与文件权限不一样，一般文件不许要x也即-rw-rw-rw-，而目录x很重要drwxrwxrwx,创建的文件和目录即减去umask值
+
+36.文件隐藏属性（比如无法移动，只能增加不能修改），chattr只有在ext2和3上才有用，配套只有lsattr才能查看该属性
+
+37.文件特殊属性SUID，s标志取代文件owner的x权限：该权限仅对二进制程序有效，运行者对于该程序具有可运行权，仅在运行过程中有效，运行者具有owner的权限。如改密码程序passwd，非root用户可以改自己密码，当密码文件只有root才能改写，通过SUID普通用户暂时或得root权限；
+SGID即s写在群组的x上，运行时或得群组的权限，对目录也可用
+SBIT只针对目录，
+
+38.查看文件基本数据file
+
+39.文件搜寻which默认找$PATH内目录，whereis从系统文件记录数据库查，find硬盘查，locate依据/var/lib/mlocate内的数据库记载
+
+40.查看文件系统block，superblock信息dumpe2fs,df查看磁盘使用量
+
+41.文件对应的inode并不记录文件名，文件名保存在目录记录上，所以目录有w权限时，能rename file
+
+42.日志式文件系统，创建一份文件，先要有该目录下的w，x权限，向superblock申请空白inode和block，填入权限属性和具体数据，这里存在资源管理的问题，若突发状况，影响了这一本该原子操作，造成数据不一致。初始有全区数据一致性比较，对大容量数据耗时，后来的采用日志记录，即当要写一文件时，会在日志记录块记录写入的信息，实际写入，然后再在记录区完成该记录，这样只要检查记录区就能发现出问题的地方。
+
+43.磁盘分区fdisk，格式化mkfs（make filesystem），检测fsck，挂载mount，unmount
+
+44.文件压缩：gzip压缩后一般命名为*.gz,可以被winrar识别; bzip2压缩命名*.bz2。上两都是针对单一文件，对目录也只是目录下每个文件压缩，而有专门打包tar,压缩打包tar -jcv -f filename.tar.bz2,解压tar -jxv -f filename.tar.bz2 -C,查询 tar -jtv -f filename.tar.bz2。其中-j是bzip2压缩如果用-z就是gzip
+
+45.备份和还原dump和estore，dump对单一文件系统备份更给力
+
+46.一账户对应UID和GID,一般机器辨识的是UID和GID有个映射
+/etc/passwd账户信息文件，一行一号，帐号名：x（以前系统的口令位置）：UID：GID：用户信息说明：家目录：shell
+/etc/shadow，帐号名：加密过的口令：最近改动口令日期：口令不可改的天数：口令需重新变的天数：口令需变期限前的警告天数：口令过期后的帐号宽限时间:帐号失效日期：保留
+/etc/group,组名：群口令：GID：此群包含账户","分隔
+
+47.账户创建useradd，密码passwd
+
+48.makefile主要为大程序（n多源文件）服务，一次构造，享用多次，简化编译，连接程序步骤，并且优化改动时编译过程。基本的语法规则：
+tagrget（类适于label，标明一段）:目标文件1 目标文件2（编译生成的中间文件，*.o）
+<tab> gcc -o 欲创建的运行程序名 目标文件1 目标文件2 （命令行，如有gcc命令以tab起始，还可以有其他命令）
+变量语法：
+(1)变量与内容‘=’隔开，可以用空格，起始不能有tab，:
+(2)以大写字母为主，使用以${变量名}或$(变量名)
+(3)当前shell的环境变量可以被套用
+
+49.tarball安装，是原始代码解压缩，按readme等说明文件编译链接生成，并按目录规范把程序各部分放入相应目录，方便管理（卸载，查看软件说明帮助等）
+
+50.函数库：静态和动态。公共可用，很简单就实现功能扩展
+静态：扩展名.a,通常libxxx.a,整合到运行程序中，可独立运行，程序文件大，升级麻烦
+动态：.so,libxxx.so.整合的只是一个指向，依赖执行，接口不变独立升级
+绝大多数函数库放在/usr/lib和/lib，kernal的放在/lib/mudules
+
+51.tarball安装最原始，但不方便管理，压根不知道系统安装了哪些程序。所以有了Debian系的dpkg（Ubuntu属于Debian系）和RPM软件管理机制，将软件的相关信息写入软件管理机制，以后就可一作升级、移除等管理了。
+linux开发商都提供线上升级机制，当需要相依的软件时，联网下载安装，dpkg管理机制上为APT（apt-get），Red Hat（RPM）为yum，其他distribution不同可能不一样
+
+52.RPM全名RedHat Package Manager,该机制是有Red Hat先发展出来的，以一种数据库记录的方式将所需要的软件安装到系统的管理机制。一般文件名XXX.rpm.该方式的包里面是编译过的文件+默认的数据库记录（记录安装时必须具备的相依属性软件），安装时对比RPM数据库对比查找相依属性软件是否存在，不存在不安装。把自身相关信息写入RPM数据库。
+该机制下1.软件文件安装环境必须与打包时环境需求一致或相当（因为包内是编译好的文件）2.需要满足软件的相依属性需求 3.反安装时需小心，最底层的软件不可先移除。
+由于RPM方式的限制所以有了SRPM，包里含有源码，一般文件名***.src.rpm,这样碰到不一样的环境就可以修改包里面的参数配置文件，重新编译生成适合自己环境的。
+RPM的软件的属性相依问题
+
+53.X （Window System）,X字母表在W（indow）后，下一代窗口之意。以应用程序的概念开发而非操作系统，最初MIT的开发者不希望与硬件太相关。X window system是个利用网络架构的图形使用者界面软件，这架构基本上分成X Server和X Client两组件。
+
+Server管理硬件，Client应用程序。运行是Client将所想呈现的画面告知Server,再由所管理的硬件绘制出。远程服务器的绘图数据要在我们机器上显示，则需要远程服务器提供的X Client软件。Serer又会把输入装置的动作告知Client，Client再把想要的显示效果告诉Server。这里就有个分层思想
+
+54. X client 彼此不知道对方在，绘图常会相互重叠而困扰。产生了Window Manager(WM窗口管理员)，WM也是X Client，不过主要负责全部X client的控制管理，还包括某些特殊功能如1.提供许多的控制元素包括工作列，背景壁纸的配置； 2.管理虚拟壁纸； 3.提供窗口控制参数（窗口大小，重叠显示、移动、最小化等）。KDE、GNOME、XFCE、twm都是WM的专案计划，每种WM所用来开发的显示引擎都不太相同。
+举例说明上面3者关系：要启动X Window System，所以要有X server，这样才能控制硬件绘制，为了管理窗口管理方便，所以加装某套WM，然后为使用方便，在WM上在加上更多的窗口X Client应用软件，比如输入法，Open Office,浏览器。图形登录界面（输入帐号口令）是Display Manager，主要提供登录环境，并加载WM，一般WM计划中都会提供
+
+55.daemon，守护进程，提供服务。在linux系统里有两类，stand-alone和super daemon，前一类就独立启动，常驻内存，提供的服务实时性高些；后一类相当与有个stand-alone监听然后启动被请求的服务程序，结束后关闭，更节省资源，也可以添加一些限制管理。一个服务命名通常以d结尾，指的就是daemon。服务与端口号的对应配置存在/etc/sevices.
+启动一项服务不是仅仅启动一个程序，一般都会有个script来启动一系列准备工作。以下是daemon相关文件
+/etc/init.d/* 启动脚本
+/etc/sysconfig/* 服务的初始化环境配置文件
+/etc/xinetd.conf,/etc/xinetd.d/* super daemon配置文件
+/etc/* 各服务各自的配置文件
+/var/lib/* 各服务产生的数据库
+/var/run/* 服务程序的PID记录处
+
+56.几个重要的日志文件，不同distribution的名可能有出入
+/var/log/cron: 例行性工作排程，crontab排程又没被执行，发生错误，/etc/crontab是否写错
+/var/log/dmesg:系统启动时核心侦测的各种信息
+/var/log/lastlog:所有帐号最近一次登录系统的信息
+/var/log/maillog或/var/log/mail/*:邮件往来信息，sendmail（SMTP协议提供者）和dovecot（POP3）所产生的信息
+/var/log/message:几乎系发生的错误或重要信息都放这，很重要
+/var/log/secure:需要帐号口令登录的软件，都会把登录信息记录此，不管登录正确或错误
+/var/log/wtmp,/var/log/faillog:正确登录系统和错误登录的帐号资讯
+/var/log/httpd/*,/var/log/news/*,/var/log/samba/*:不同网络服务记载自己产生的各项信息
+
+57.系统合法的shell在/etc/shells文件中有记录，可供其他服务查询.linux里标准shell为bash，使用过的命令记录在家目录的.bash_history文件中，type 命令，可以查看命令是否bash内建命令,反斜杠（\）+enter下一行继续输入
+变量的使用：echo显示变量，系统默认变量一般用大写字母，且用时$打头,赋值直接=，在=两边不能直接接空格，单引号内容，特殊字符仅为一般字符（看到什么就是什么）；双引号会保留原本特性如$则后面还是当作变量解释显示。
+变量嵌套，用其他命令返回的信息$(命令)，扩增内容"$变量名"新增内容。
+把变量变为环境变量export。
+取消变量unset.
+显示环境变量env（envirnment）
+交互输入变量内容read -p提示内容 -t等待时间
+变量申明declare -a数组，-i整型，-x环境变量 -r只读
+查看历史命令：history
+通配符：
+* 0到无穷多任意字符
+？ 一个任意字符
+[] 一定有括号内的一个字符
+[0-9] 括号内容为0，1，2，3，……，9使用时*[-]*
+[^] 取非，不是括号内内容,[^a-z]*
+特殊符号：
+#注释
+\转义
+|管线（pipe）
+；命令分隔
+～家目录
+$取用变量前导符
+&将命令变成后台工作
+！逻辑非
+/路径分隔符
+>(取代，覆盖原内容),>>（内容会累加）输出导向
+<,<<输入导向
+（）子shell起始结束块
+{}命令区块组合
+
+58.数据流重定向
+标准输入　　(stdin) ：代码为 0 ，使用 < 或 << 
+标准输出　　(stdout)：代码为 1 ，使用 > 或 >> 
+标准错误输出(stderr)：代码为 2 ，使用 2> 或 2>> 
+
+59.管线命令（|），跟连续命令不一样，处理前一个命令的正确输出，也即后一命令把前一命令的STDOUT作为STDIN然后处理后STDOUT
+一些管线命令:cut取出一行信息中我们想要的部分，grep按条件筛选出那行,sort排序，uniq去重显示配合sort,wc计数，tee双向数据导向（不影响当前数据流方向再添加一个方向）。字符转换命令tr（删除或替换），col（转tab为对等空格），join（两文件，有同字段的合并，最好事先sort过），paste（两行贴一起，中以tab隔开），expand（tab转空格）。分割命令split，参数代换：xargs
+
+60.把当前工作丢背景中（暂停）ctrl+z,查看目前后台工作状态jobs，把后台工作拿前台处理fg（foreground），背景中的stopped的工作运行bg，移除工作kill（后接数字默认PID，管理bash工作则要加上%数字，从jobs中可观察）。离线或注销后继续跑工作nohup
+
+61.进程管理，进程互相控制通过发signal，可以通过kill -具体信号类型 PID传递signal给相应进程。
+PRI由系统核心动态调整，用户可以nice调整，会有一定影响。
+
+62.系统资源观查
+内存 free
+启动时间工作负载 uptime
+
+63.vim常用快捷键
+文件浏览
+:Ex = 浏览当前目录下的所有文件，可进行一些操作
+:e <path/to/file> open a file
+:Sex = 水平分割k窗口，并在一个窗口中开启目录浏览器
+：ls = 显示当前buffer情况
+
+vi与shell切换
+：shell = 在不关闭vi切换到shell，exit退回到vi
+
+Undo/Redo
+u = undo
+ctrl r = redo
+
+移动光标：
+ctrl+f = Page Down
+ctrl+b = Page Up
+0 = Home
+$ = End
+大G = 最后一行
+nG = 移动到n行
+gg = 到第一行
+:n = 移到n行
+n<Enter> = 向下移动n行
+w = 下个单词开头
+e = 下个单词结尾
+hjkl = left/down/up/right
+
+搜索取代： 
+程序员用：% = 匹配（ { [; *和# = 下上个匹配单词
+/word = 向光标下搜word,n搜同方向下一个，N搜反方向下一个
+：n1,n2s/word1/word2/g = n1与n2行之间用word2替代word1
+：1,$s/word1/word2/g = 最后一行为止，其他同上条
+：1,$s/word1/word2/gc = 取代前多了个确认
+
+删除复制粘帖
+x,X = x后删，X前删字符,nx后删那个字符
+dd = 删一行，有ndd
+yy = 复制一行，有nyy
+p,P = p下一行粘帖，P从本行开始粘帖
+u = 复原前动作（win里面ctrl+Z） 在u基础上才能相反ctrl+r
+. = 重复前一动作
+cw = replace a word after 
+dw = delete a word
+
+进入编辑模式
+i = 目前光标出插入
+a = 下一个字符插入
+o = 插入下一行
+
+r = 取代一次
+
+命令进阶：
+. = 重复上一次命令
+N<cmd> = 重复cmd命令N次
+指令：
+:w = 存储
+:q = 离开
+:wq = 存储并离开
+:e <path/to/file> = open a file
+:saveas <path/to/file> = 另存为
+:w !sudo tee % = save file only written by root
+:set nu = 设定行号
+:set nonu = 取消行号
+
+binary edit
+step1: vim -b file (:set display=uhex 显示不可打印字符;命令ga显示光标10,16,8进制值;命令g ctrl+g 显示当前字节位置，可用字节位置go移动到字节位置)
+step2: :%!xxd  (call outer program--xxd to dump character to hex)
+step3: edit hex
+step4: :%!xxd -r (call xxd -r to rdump)
+ 
+VIM编辑的时候回存储一个filename.swap临时文件，可用作恢复
+区块选择：
+v,V = v光标经过字符反白选中，V行选中
+ctrl+v = 长方形区块选择
+y = 反白部分复制
+d = 反白部分删除
+
+多文档同时编辑
+vim file1 file2
+:files = 查看打开了那些
+:n = 切换到下一个编辑文档
+:n filename = change to file named filename
+:e# = back to previous file which was edited
+
+多窗口
+：split(sp) filename = 横向开启filename新窗口，若无filename原文件再打开一份
+:vsplit(vsp) filename = 纵向新窗口
+ctrl+w+方向上下 = 窗口切换，ctrl+w快速切换
+
+文件比较
+(1)使用vim比较模式打开两文件 vim -d file1 file2 或者 vimdiff file1 file2
+(2)已打开file1 :(vert) diffsplit file2 (水平分割)上下分割
+(3)两都打开，分别在两个窗口:diffthis
+(4)更改了某窗口内容 :diffupdate
+定位不同点: [c=前一个 ]c=后一个
+不同点合并： dp=差异点的当前文档内容应用到另一文档；do=差异点的另一文档拷贝到当前文档
+折叠展开： zo（open）zc（close）
+
+vim自定义配置操作环境
+:set all = 查看当前配置
+整体vim设定在 /etc/vim/vimrc
+用户可以z手动生成修改～/.vimrc
+
+64.正则
+grep 截取匹配行。基本grep [-acinv] [-A][-B][--color=auto] '匹配字符串' filename
+参数说明：-a：binary文件以text文件方式搜寻
+-c：计数
+-i：忽略大小写
+-n：输出匹配行号
+-v：显示没有匹配内容行，即反选
+-A：after，-A6n后续n行也显示
+-B：before，-Bn匹配行前n行
+--color=auto：匹配字符加颜色
+匹配字符串里的正则语法：[ae]任取其中一个仅一个，a或e
+[^g]不是g；[^a-z]非小写字母；[]内的^表反选
+只在行首匹配：^the,行首为the的那行；^[a-z]行首为小写字母
+linux中断行是以$,所以行尾匹配：ccc$,就是末ccc串的行
+.(点)：任意一个字节；*（星号）：重复前面字节任意次（0-无穷）
+表示前面字符个数：go\{2,5\}g,\转意，两g中间2到5哥o，也可一只有一个数字
+
+65.shell script
+#注释
+Enter结尾，则为执行语句，多行\
+
+66.shell强大命令
+!$ = 前一cmd的最后一个字符串
+sudo !! = 以root身份执行上条cmd
+!cmd = redo前条cmd
+cd - = ret to previous dir，so can switch current dir with pre
+alt+.或esc+.  = repeat para in previous cmd
+man ascii  = show ascii code table
+
+67.python版本切换
+修改链接文件sudo ln /usr/bin/python*(源) /usr/bin/python(链接文件)
+
