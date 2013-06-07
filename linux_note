@@ -204,6 +204,15 @@ Server管理硬件，Client应用程序。运行是Client将所想呈现的画�
 交互输入变量内容read -p提示内容 -t等待时间
 变量申明declare -a数组，-i整型，-x环境变量 -r只读
 查看历史命令：history
+shortcut:
+c-a,c-e: cmd start/end
+c-u,C-k: clear after/before cursor
+C-h: backspace
+C-r: find history cmd
+C-c: terminate cmd
+C-d: exit shell
+C-z: turn back exe
+
 通配符：
 * 0到无穷多任意字符
 ？ 一个任意字符
@@ -249,6 +258,11 @@ PRI由系统核心动态调整，用户可以nice调整，会有一定影响。
 :Sex = 水平分割k窗口，并在一个窗口中开启目录浏览器
 ：ls = 显示当前buffer情况
 
+Completion
+C-x C-n
+C-x C-f = filename completion
+C-x C-o = based on tag
+
 vi与shell切换
 ：shell = 在不关闭vi切换到shell，exit退回到vi
 
@@ -268,6 +282,8 @@ gg = 到第一行
 n<Enter> = 向下移动n行
 w = 下个单词开头
 e = 下个单词结尾
+ta = jump to next pre a
+fa = jump to next a
 hjkl = left/down/up/right
 
 搜索取代： 
